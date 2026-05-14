@@ -53,7 +53,7 @@ function parseInterest(rawText: string): { companyName: string | null; amountGbp
   return { companyName, amountGbp };
 }
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 20; // Parliament API caps take at 20
 
 async function fetchAllMPsFromAPI(partyId: number, partyName: string): Promise<MP[]> {
   const all: MP[] = [];
@@ -73,13 +73,13 @@ async function fetchAllMPsFromAPI(partyId: number, partyName: string): Promise<M
       all.push({
         parliamentId: item.value.id,
         name: item.value.nameDisplayAs,
-        party: item.value.latestParty?.name ?? partyName,
+        party: partyName, // normalise to the requested party name so cache lookups are consistent
         constituency: item.value.latestHouseMembership?.membershipFrom ?? null,
         thumbnailUrl: item.value.thumbnailUrl ?? null,
         nameFullTitle: item.value.nameFullTitle ?? null,
       });
     }
-    skip += PAGE_SIZE;
+    skip += items.length; // increment by actual items returned, not assumed page size
   }
 
   return all;
