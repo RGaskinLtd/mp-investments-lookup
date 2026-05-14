@@ -10,6 +10,7 @@ export interface MP {
   party: string;
   constituency: string | null;
   thumbnailUrl: string | null;
+  nameFullTitle: string | null;
 }
 
 export interface Interest {
@@ -75,6 +76,7 @@ async function fetchAllMPsFromAPI(partyId: number, partyName: string): Promise<M
         party: item.value.latestParty?.name ?? partyName,
         constituency: item.value.latestHouseMembership?.membershipFrom ?? null,
         thumbnailUrl: item.value.thumbnailUrl ?? null,
+        nameFullTitle: item.value.nameFullTitle ?? null,
       });
     }
     skip += PAGE_SIZE;
@@ -101,19 +103,20 @@ export async function getMPsByParty(partyId: number, partyName: string, limit: n
     const mps = await fetchAllMPsFromAPI(partyId, partyName);
     for (const mp of mps) {
       await pool.query(
-        `INSERT INTO mps (parliament_id, name, party, constituency, thumbnail_url, cached_at)
-         VALUES ($1, $2, $3, $4, $5, NOW())
+        `INSERT INTO mps (parliament_id, name, party, constituency, thumbnail_url, name_full_title, cached_at)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
          ON CONFLICT (parliament_id) DO UPDATE
-           SET name=$2, party=$3, constituency=$4, thumbnail_url=$5, cached_at=NOW()`,
-        [mp.parliamentId, mp.name, mp.party, mp.constituency, mp.thumbnailUrl]
+           SET name=$2, party=$3, constituency=$4, thumbnail_url=$5, name_full_title=$6, cached_at=NOW()`,
+        [mp.parliamentId, mp.name, mp.party, mp.constituency, mp.thumbnailUrl, mp.nameFullTitle]
       );
     }
-    // Sort by name for consistent top-N selection
-    mps.sort((a, b) => a.name.localeCompare(b.name));
+    sortBySeniority(mps);
     return mps.slice(0, limit);
   }
 
-  return cached.rows.map(rowToMP).slice(0, limit);
+  const all = cached.rows.map(rowToMP);
+  sortBySeniority(all);
+  return all.slice(0, limit);
 }
 
 export async function getInterestsForMP(parliamentId: number): Promise<Interest[]> {
@@ -163,6 +166,16 @@ export async function getAllParties(): Promise<Party[]> {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+function seniorityScore(mp: MP): number {
+  const title = mp.nameFullTitle ?? '';
+  if (/rt\.?\s*hon/i.test(title)) return 0;
+  return 1;
+}
+
+function sortBySeniority(mps: MP[]): void {
+  mps.sort((a, b) => seniorityScore(a) - seniorityScore(b) || a.name.localeCompare(b.name));
+}
+
 function rowToMP(row: any): MP {
   return {
     parliamentId: row.parliament_id,
@@ -170,6 +183,7 @@ function rowToMP(row: any): MP {
     party: row.party,
     constituency: row.constituency,
     thumbnailUrl: row.thumbnail_url,
+    nameFullTitle: row.name_full_title ?? null,
   };
 }
 

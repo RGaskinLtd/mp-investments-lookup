@@ -4,8 +4,9 @@ CREATE TABLE IF NOT EXISTS mps (
   name          TEXT NOT NULL,
   party         TEXT NOT NULL,
   constituency  TEXT,
-  thumbnail_url TEXT,
-  cached_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  thumbnail_url   TEXT,
+  name_full_title TEXT,
+  cached_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS interests (
