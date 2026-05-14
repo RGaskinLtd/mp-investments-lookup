@@ -16,19 +16,28 @@ const props = defineProps<{ mps: DashboardMP[] }>();
 
 const { selectedMPId } = useSelectedMP();
 
-const chartData = computed(() => ({
-  labels: props.mps.map((mp) => mp.name.split(' ').pop()),
-  datasets: [
-    {
-      label: 'Total declared (£)',
-      data: props.mps.map((mp) => mp.totalAmount),
-      backgroundColor: '#6366f1cc',
-      borderColor: '#6366f1',
-      borderWidth: 1,
-      borderRadius: 4,
-    },
-  ],
-}));
+const chartData = computed(() => {
+  const anySelected = selectedMPId.value !== null;
+  return {
+    labels: props.mps.map((mp) => mp.name.split(' ').pop()),
+    datasets: [
+      {
+        label: 'Total declared (£)',
+        data: props.mps.map((mp) => mp.totalAmount),
+        backgroundColor: props.mps.map((mp) =>
+          !anySelected || mp.parliamentId === selectedMPId.value ? '#6366f1cc' : '#6366f133'
+        ),
+        borderColor: props.mps.map((mp) =>
+          mp.parliamentId === selectedMPId.value ? '#a5b4fc' : '#6366f1'
+        ),
+        borderWidth: props.mps.map((mp) =>
+          mp.parliamentId === selectedMPId.value ? 2 : 1
+        ),
+        borderRadius: 4,
+      },
+    ],
+  };
+});
 
 const options = computed(() => ({
   responsive: true,

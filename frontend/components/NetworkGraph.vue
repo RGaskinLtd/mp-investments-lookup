@@ -268,6 +268,31 @@ function centerOnMP(parliamentId: number) {
         .translate(width / 2 - node.x * scale, height / 2 - node.y * scale)
         .scale(scale),
     );
+
+  updateHighlight(parliamentId);
+}
+
+function updateHighlight(parliamentId: number | null) {
+  if (!svgRef.value) return;
+  // Remove any existing selection ring
+  d3.select(svgRef.value).selectAll('.selection-ring').remove();
+  if (parliamentId == null) return;
+
+  const node = liveNodes.find((n) => n.id === `mp-${parliamentId}`);
+  if (!node) return;
+
+  // Find the node's <g> element and append a ring behind the circle
+  d3.select(svgRef.value)
+    .selectAll<SVGGElement, NodeDatum>('g g') // node groups inside the main <g>
+    .filter((d) => d?.id === `mp-${parliamentId}`)
+    .insert('circle', ':first-child') // insert before everything else in the group
+    .classed('selection-ring', true)
+    .attr('r', node.radius + 7)
+    .attr('fill', 'none')
+    .attr('stroke', '#ffffff')
+    .attr('stroke-width', 2.5)
+    .attr('stroke-dasharray', '4 3')
+    .attr('opacity', 0.9);
 }
 
 function openBrave() {
@@ -278,7 +303,10 @@ function openBrave() {
 onMounted(render);
 watch(() => props.mps, render, { deep: true });
 watch(flags, render, { deep: true });
-watch(selectedMPId, (id) => { if (id != null) centerOnMP(id); });
+watch(selectedMPId, (id) => {
+  if (id != null) centerOnMP(id);
+  else updateHighlight(null);
+});
 
 const { isMobile } = useIsMobile();
 </script>

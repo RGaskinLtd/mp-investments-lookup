@@ -103,9 +103,10 @@ function categoryColour(cat: string): string {
       :key="mp.parliamentId"
       :style="{
         marginBottom: '8px',
-        border: mpHasFlag(mp.filtered) ? '1px solid #ef444455' : '1px solid var(--border)',
+        border: mpHasFlag(mp.filtered) ? '1px solid #ef444455' : selectedMPId === mp.parliamentId ? '1px solid #6366f166' : '1px solid var(--border)',
         borderRadius: '8px',
         overflow: 'hidden',
+        boxShadow: selectedMPId === mp.parliamentId ? '0 0 0 2px #6366f133' : 'none',
       }"
     >
       <!-- MP header -->
@@ -116,7 +117,7 @@ function categoryColour(cat: string): string {
           alignItems: 'center',
           gap: '12px',
           padding: '12px 16px',
-          background: mpHasFlag(mp.filtered) ? '#ef44440d' : 'var(--surface)',
+          background: mpHasFlag(mp.filtered) ? '#ef44440d' : selectedMPId === mp.parliamentId ? '#6366f114' : 'var(--surface)',
           border: 'none',
           color: 'var(--text)',
           cursor: 'pointer',
