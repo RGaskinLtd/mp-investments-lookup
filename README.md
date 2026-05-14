@@ -27,7 +27,7 @@ A self-hosted web app that pulls declared financial interests for UK MPs from th
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/mp-investments-lookup.git
+git clone https://github.com/RGaskinLtd/mp-investments-lookup.git
 cd mp-investments-lookup
 ```
 
