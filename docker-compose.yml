@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mp_investments
+      POSTGRES_USER: mp_user
+      POSTGRES_PASSWORD: mp_pass
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mp_user -d mp_investments']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build: ./server
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: postgres://mp_user:mp_pass@db:5432/mp_investments
+      COMPANIES_HOUSE_API_KEY: ${COMPANIES_HOUSE_API_KEY}
+      PORT: 3001
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      API_INTERNAL_URL: http://server:3001
+    depends_on:
+      - server
+
+volumes:
+  pgdata:

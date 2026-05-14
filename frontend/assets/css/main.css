@@ -1,0 +1,91 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --border: #2a2d3a;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent: #6366f1;
+  --labour: #e4003b;
+  --conservative: #0087dc;
+  --libdem: #faa61a;
+  --snp: #fff95d;
+  --green: #00b140;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+/* ── Scrollable tab row ──────────────────────────────────────────────────── */
+.tab-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.tab-row::-webkit-scrollbar { display: none; }
+.tab-row button { flex-shrink: 0; }
+
+/* ── Scrollable chip row (InvestmentsBreakdown) ─────────────────────────── */
+.chip-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.chip-row::-webkit-scrollbar { display: none; }
+
+/* ── Responsive table ───────────────────────────────────────────────────── */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ── Mobile overrides ───────────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .container { padding: 0 1rem; }
+
+  .card { padding: 0.875rem; border-radius: 6px; }
+
+  .hide-mobile { display: none !important; }
+
+  .chip-row { flex-wrap: nowrap; }
+
+  .controls-row {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  .controls-row select,
+  .controls-row input[type="range"] {
+    width: 100%;
+  }
+  .controls-row button {
+    width: 100%;
+    text-align: center;
+  }
+}
