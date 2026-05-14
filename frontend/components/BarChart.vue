@@ -14,6 +14,8 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const props = defineProps<{ mps: DashboardMP[] }>();
 
+const { selectedMPId } = useSelectedMP();
+
 const chartData = computed(() => ({
   labels: props.mps.map((mp) => mp.name.split(' ').pop()),
   datasets: [
@@ -28,9 +30,14 @@ const chartData = computed(() => ({
   ],
 }));
 
-const options = {
+const options = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
+  onClick: (_event: any, elements: any[]) => {
+    if (elements.length === 0) return;
+    const mp = props.mps[elements[0].index];
+    if (mp) selectedMPId.value = mp.parliamentId;
+  },
   plugins: {
     legend: { display: false },
     tooltip: {
@@ -46,11 +53,11 @@ const options = {
       grid: { color: '#2a2d3a' },
     },
   },
-};
+}));
 </script>
 
 <template>
   <div style="height: 320px">
-    <Bar :data="chartData" :options="options" />
+    <Bar :data="chartData" :options="options" style="cursor: pointer" />
   </div>
 </template>

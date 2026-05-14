@@ -5,9 +5,14 @@ import type { DashboardMP } from '~/composables/useDashboard';
 const props = defineProps<{ mps: DashboardMP[] }>();
 
 const { isFlagged, mpHasFlag, flags } = useRedFlags();
+const { selectedMPId } = useSelectedMP();
 
 const svgRef = ref<SVGSVGElement | null>(null);
 const wrapRef = ref<HTMLDivElement | null>(null);
+
+// Kept across renders so the watch can center after render/sim-settle
+let zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null;
+let liveNodes: NodeDatum[] = [];
 
 interface NodeDatum extends d3.SimulationNodeDatum {
   id: string;
@@ -88,6 +93,7 @@ function render() {
     .scaleExtent([0.15, 6])
     .on('zoom', (event) => g.attr('transform', event.transform));
   svg.call(zoom);
+  zoomBehavior = zoom;
 
   // Zoom buttons
   const ctrl = svg.append('g').attr('transform', `translate(${width - 44}, 12)`);
@@ -100,6 +106,8 @@ function render() {
   makeBtn(ctrl, 0, '+').on('click', () => svg.transition().duration(220).call(zoom.scaleBy, 1.45));
   makeBtn(ctrl, 34, '−').on('click', () => svg.transition().duration(220).call(zoom.scaleBy, 0.7));
   makeBtn(ctrl, 68, '⊙').on('click', () => svg.transition().duration(280).call(zoom.transform, d3.zoomIdentity));
+
+  liveNodes = nodes; // D3 mutates this array in-place, so the ref stays live
 
   // ── Simulation ──────────────────────────────────────────────────────────────
   // Link distance scales with company node size so bigger nodes sit further out
@@ -229,6 +237,31 @@ function render() {
       .attr('y2', (d) => (d.target as NodeDatum).y!);
     nodeG.attr('transform', (d) => `translate(${d.x},${d.y})`);
   });
+
+  sim.on('end', () => {
+    if (selectedMPId.value != null) centerOnMP(selectedMPId.value);
+  });
+}
+
+function centerOnMP(parliamentId: number) {
+  if (!zoomBehavior || !svgRef.value) return;
+  const node = liveNodes.find((n) => n.id === `mp-${parliamentId}`);
+  if (!node || node.x == null || node.y == null) return;
+
+  const el = svgRef.value;
+  const width = el.clientWidth || 900;
+  const height = 680;
+  const scale = 1.8;
+
+  d3.select(el)
+    .transition()
+    .duration(700)
+    .call(
+      zoomBehavior.transform,
+      d3.zoomIdentity
+        .translate(width / 2 - node.x * scale, height / 2 - node.y * scale)
+        .scale(scale),
+    );
 }
 
 function openBrave() {
@@ -239,6 +272,7 @@ function openBrave() {
 onMounted(render);
 watch(() => props.mps, render, { deep: true });
 watch(flags, render, { deep: true });
+watch(selectedMPId, (id) => { if (id != null) centerOnMP(id); });
 
 const { isMobile } = useIsMobile();
 </script>

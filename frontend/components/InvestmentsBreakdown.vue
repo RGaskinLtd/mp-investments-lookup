@@ -4,6 +4,7 @@ import type { DashboardMP } from '~/composables/useDashboard';
 const props = defineProps<{ mps: DashboardMP[] }>();
 
 const { isFlagged, mpHasFlag } = useRedFlags();
+const { selectedMPId } = useSelectedMP();
 
 const INVESTMENT_CATEGORIES = [
   '7. (i) Shareholdings',
@@ -58,6 +59,7 @@ function toggleMP(id: number) {
   const next = new Set(expanded.value);
   next.has(id) ? next.delete(id) : next.add(id);
   expanded.value = next;
+  selectedMPId.value = id;
 }
 
 function categoryColour(cat: string): string {

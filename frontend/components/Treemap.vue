@@ -23,6 +23,8 @@ interface SelectedItem {
 
 const selected = ref<SelectedItem | null>(null);
 
+const { selectedMPId } = useSelectedMP();
+
 // Build MP lookup for click handler
 const mpByName = computed(() => {
   const m = new Map<string, DashboardMP>();
@@ -139,6 +141,7 @@ function handleClick(params: any) {
   const mp = mpByName.value.get(d.name);
   if (mp) {
     // MP-level node clicked
+    selectedMPId.value = mp.parliamentId;
     selected.value = {
       type: 'mp',
       name: mp.name,
