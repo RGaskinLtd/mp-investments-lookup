@@ -241,6 +241,12 @@ function render() {
   sim.on('end', () => {
     if (selectedMPId.value != null) centerOnMP(selectedMPId.value);
   });
+
+  // Center after partial settlement (~600 ms) so we don't wait 7+ seconds for alphaDecay
+  if (selectedMPId.value != null) {
+    const id = selectedMPId.value;
+    setTimeout(() => centerOnMP(id), 600);
+  }
 }
 
 function centerOnMP(parliamentId: number) {
