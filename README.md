@@ -113,8 +113,38 @@ All data is cached locally in PostgreSQL with a 24-hour TTL. No data is sent to 
 
 ---
 
+---
+
+## Deploying to Vercel + Neon (free)
+
+The app can run entirely on Vercel (frontend + API) with [Neon](https://neon.tech) for the database. No separate backend server needed.
+
+### 1. Create a Neon database
+
+1. Sign up at **[neon.tech](https://neon.tech)** (free tier is fine)
+2. Create a new project — choose the region closest to your users
+3. Copy the **Connection string** (looks like `postgres://user:pass@ep-xxx.neon.tech/neondb?sslmode=require`)
+
+### 2. Deploy to Vercel
+
+1. Push the repo to GitHub (already done)
+2. Go to **[vercel.com](https://vercel.com)** → **Add New Project** → import from GitHub
+3. On the **Configure Project** screen set:
+   - **Root Directory:** `frontend`
+   - **Framework Preset:** Nuxt.js (auto-detected)
+4. Under **Environment Variables**, add:
+   | Name | Value |
+   |------|-------|
+   | `DATABASE_URL` | your Neon connection string |
+   | `COMPANIES_HOUSE_API_KEY` | your Companies House API key |
+5. Click **Deploy**
+
+> **Note on first load:** The first time a party is loaded, the app fetches all MPs from the Parliament API (~20 requests). This may take 15–30 seconds. Vercel's Pro plan allows up to 60-second function timeouts; the Hobby plan caps at 10 seconds, which may timeout on cold first loads. After the first load, everything is cached in Neon and subsequent loads are instant.
+
+---
+
 ## Tech stack
 
-- **Backend:** Node.js · Express · TypeScript · PostgreSQL
+- **Backend:** Nuxt 3 Nitro (API routes) · PostgreSQL (local) / Neon (Vercel)
 - **Frontend:** Nuxt 3 (SPA mode) · Vue 3 · D3.js · ECharts · Chart.js
-- **Infrastructure:** Docker Compose
+- **Infrastructure:** Docker Compose (local) · Vercel + Neon (production)
